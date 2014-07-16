@@ -3,13 +3,14 @@
 	* https://gist.github.com/rocktronica/2625413
 */
 
-var words = (function(){
-
-	var sWords = document.body.innerText.toLowerCase().trim().replace(/[,;.]/g,'').split(/[\s\/]+/g).sort();
-	var iWordsCount = sWords.length; // count w/ duplicates
+function getWordFrequency(data){
+	// sorted words
+	var sWords = data.toLowerCase().trim().replace(/[,;.]/g,'').split(/[\s\/]+/g).sort();
+	// word count including duplicates
+	var iWordsCount = sWords.length;
 
 	// array of words to ignore
-	var ignore = ['and','the','to','a','of','for','as','i','with','it','is','on','that','this','can','in','be','has','if'];
+	var ignore = ['and','the','to','a','of','for','as','with','it','is','on','that','this','can','in','be','has','if'];
 	ignore = (function(){
 		var o = {}; // object prop checking > in array checking
 		var iCount = ignore.length;
@@ -40,13 +41,4 @@ var words = (function(){
 	return arr.sort(function(a,b){
 		return (a.frequency > b.frequency) ? -1 : ((a.frequency < b.frequency) ? 1 : 0);
 	});
-
-}());
-
-(function(){
-	var iWordsCount = words.length; // count w/o duplicates
-	for (var i=0; i<iWordsCount; i++) {
-		var word = words[i];
-		console.log(word.frequency, word.text);
-	}
-}());
+};

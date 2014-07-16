@@ -1,21 +1,68 @@
-// test data
-var billboard_data = {
-    Album: "Teenage Dream (Deluxe Edition)", 
-    Artist: "Katy Perry", 
-    Lyrics: "There's a stranger in my bed,\nThere's a pounding in my head\nGlitter all over the room\nPink flamingos in the pool\nI smell like a minibar\nD J's passed out in the yard\nBarbie's on the barbeque\nThis a hickie or a bruise\n\nPictures of last night\nEnded up online\nI'm screwed\nOh well\nIt's a blacked out blur\nBut I'm pretty sure it ruled\nDamn\n\nLast Friday night\nYeah, we danced on tabletops\nAnd we took too many shots\nThink we kissed but I forgot\n\nLast Friday night\nYeah, we maxed our credit cards\nAnd got kicked out of the bar\nSo we hit the boulevard\n\nLast Friday night\nWe went streaking in the park\nSkinny dipping in the dark\nThen had a m\u00c3\u00a9nage \u00c3\u00a0 trois\nLast Friday night\nYeah I think we broke the law\nAlways say we're gonna stop\nOp-oh-oh\n\nThis Friday night\nDo it all again\nThis Friday night\nDo it all again\n\nTrying to connect the dots\nDon't know what to tell my boss\nThink the city towed my car\nChandeliers on the floor\nRipped my favorite party dress\nWarrant's out for my arrest\nThink I need a ginger ale\nThat was such an epic fail\n\nPictures of last night\nEnded up online\nI'm screwed\nOh well\nIt's a blacked out blur\nBut I'm pretty sure it ruled\nDamn\n\nLast Friday night\nYeah, we danced on table tops\nAnd we took too many shots\nThink we kissed but I forgot\n\nLast Friday night\nYeah, we maxed our credit cards\nAnd got kicked out of the bar\nSo we hit the boulevard\n\nLast Friday night\nWe went streaking in the park\nSkinny dipping in the dark\nThen had a m\u00c3\u00a9nage \u00c3\u00a0 trois\n\nLast Friday night\nYeah I think we broke the law\nAlways say we're gonna stop\nOh whoa oh\n\nThis Friday night\nDo it all again\n(Do it all again)\nThis Friday night\nDo it all again\n(Do it all again)\nThis Friday night\n\nT.G.I.F.\nT.G.I.F.\nT.G.I.F.\nT.G.I.F.\nT.G.I.F.\nT.G.I.F.\n\nLast Friday night\nYeah, we danced on table tops\nAnd we took too many shots\nThink we kissed but I forgot\n\nLast Friday night\nYeah, we maxed our credit cards\nAnd got kicked out of the bar\nSo we hit the boulevard\n\nLast Friday night\nWe went streaking in the park\nSkinny dipping in the dark\nThen had a m\u00c3\u00a9nage \u00c3\u00a0 trois\n\nLast Friday night\nYeah I think we broke the law\nAlways say we're gonna stop\nOh-whoa-oh\nThis Friday night\nDo it all again\n\n[Clapping] Whohoo!",      
-    Track: "Last Friday Night (T.G.I.F.)", 
-    Year: "2010", 
-  }
+/*
+	* kimispencer.com
+	* 16 July 2014
+*/
 
-// 1. calculate frequency of words from a string
-function getWordFrequency(data) {
-	var lyrics = data.Lyrics,
-		freq = {};
-	for (var i=0; i < lyrics; i++) {
+// global vars
+var wordFreq;
 
-	}
-}
+// setup chart
+var width = 1220,
+    barHeight = 20;
 
-getWordFrequency(billboard_data);
+var x = d3.scale.linear()
+    .range([0, width]);
 
-// 2. use d3.js to layout words and size them by their frequency
+var chart = d3.select(".chart")
+    .attr("width", width+100);
+
+// load the data set (defined by user on front-end, such as by decade, by artist, genre, etc.) 
+d3.json("data/test.json", function(error, data) {
+	processData(data);
+	visualizeData(wordFreq)
+});
+
+function processData(data) {
+	// 1. collect lyrics from defined sample and join them
+	var allLyrics = [];
+	data.forEach(function(d) {
+		var lyrics = d.lyrics;
+		allLyrics.push(lyrics);
+	});
+
+	// 2. determine frequency of words within that sample set
+	wordFreq = getWordFrequency(allLyrics.join(" "));
+};
+
+function visualizeData(data) {
+	// console.log(data);
+	x.domain([0, d3.max(data, function(d) { return d.frequency; })]);
+	chart.attr("height", barHeight * data.length);
+
+	var bar = chart.selectAll("g")
+		.data(data)
+		.enter().append("g")
+		.attr("transform", function(d, i) { return "translate(0," + i * barHeight + ")"; });
+
+	bar.append("rect")
+		.attr("width", function(d) { return x(d.frequency); })
+		.attr("height", barHeight - 2)
+		.attr("class", "bar");
+
+	bar.append("text")
+		.attr("x", function(d) { return x(d.frequency) + 10; })
+		.attr("y", barHeight / 2)
+		.attr("dy", ".35em")
+		.text(function(d) { return d.text + " : " + d.frequency; })
+		.attr("class", "word");
+
+};
+
+
+// other visualization stuff:
+// 3. determine frequency of correlations between words in that sample set
+// later: sentiment analysis (color), bpm (audio?), etc.
+
+// front-end functionalities:
+// 1. define sample set (individual artist, year, decade, or genre)
+// 2. transitions / animations (linear to circular)
