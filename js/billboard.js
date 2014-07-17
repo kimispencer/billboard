@@ -3,17 +3,19 @@
 	* 16 July 2014
 */
 
-// global vars
 var wordFreq;
-
-// setup chart
 var width = 1220;
-
-var x = d3.scale.linear()
-    .range([0, width]);
-
 var chart = d3.select(".chart")
     .attr("width", width+100);
+
+// circle stuff
+var radians = 0.0174532925, // one degree
+	circleRadius = 500,
+	margin = 50,
+	width = (circleRadius+margin)*2,
+    height = (circleRadius+margin)*2,
+    tickLength = -10,
+    clickPushY = 2;
 
 // load the data set (defined by user on front-end, such as by decade, by artist, genre, etc.) 
 d3.json("data/test.json", function(error, data) {
@@ -34,41 +36,15 @@ function processData(data) {
 };
 
 function visualizeData(data) {
-	x.domain([0, d3.max(data, function(d) { return d.frequency; })]);
 	chart.attr("height", function(d) { return data.length * 10 });
-
-	var bar = chart.selectAll("g")
-		.data(data)
-		.enter().append("g")
-		.attr("transform", function(d, i) { return "translate(0," + (i+1) * Math.sqrt(x(d.frequency) * 2) + ")"; });
-
-	bar.append("text")
-		.attr("font-size", function(d) { return Math.sqrt(x(d.frequency) * 2); })
-		.text(function(d) { return d.text + " : " + d.frequency; })
-		.attr("class", "word");
-
-	drawClock(data);
-};
-
-// draw circle
-var radians = 0.0174532925, // one degree
-	clockRadius = 500,
-	margin = 50,
-	width = (clockRadius+margin)*2,
-    height = (clockRadius+margin)*2,
-    secondTickStart = clockRadius;
-    secondTickLength = -10,
-    hourTickLength = -18
-
-function drawClock(data){ //create all the clock elements
-
+	
 	var circleScale = d3.scale.linear()
 		.range([0, data.length])
 		.domain([0, 2 * Math.PI]);
 
 	var face = d3.select(".chart").append("g")
 	    .attr("class", "clock-face")
-		.attr('transform','translate(' + (clockRadius + margin) + ',' + (clockRadius + margin) + ')');
+		.attr('transform','translate(' + (circleRadius + margin) + ',' + (circleRadius + margin) + ')');
 
 	// tick container
 	var bar = face.selectAll('g')
@@ -76,21 +52,31 @@ function drawClock(data){ //create all the clock elements
 		.enter().append('g')
 		
 	bar.append('line')
-		.attr('y1',secondTickStart)
-		.attr('y2',secondTickStart + secondTickLength)
+		.attr('y1',circleRadius)
+		.attr('y2',circleRadius + tickLength)
 		.attr('transform',function(d, i){
 			return 'rotate('  + circleScale(i) + ')';
 		})
+		.attr('class', 'tick');
 
 	bar.append('text')
 		.text(function(d){
 			return d.text;
 		})
-		.attr('x',clockRadius)
-		.attr('transform',function(d, i){
+		.attr('x',circleRadius)
+		.attr('transform', function(d, i){
 			return 'rotate('  + circleScale(i) + ')';
 		})
-		.attr('font-size', '10px');
+		.attr('font-size', function(d) {
+			return d.frequency * 5;
+		})
+		.on('mousedown', function(d){
+			var word = d3.select(this).attr('dy', clickPushY);
+		})
+		.on('mouseup', function(d){
+			var word = d3.select(this).attr('dy', 0);
+		})
+		.attr('class', 'word');
 };
 
 // other visualization stuff:
