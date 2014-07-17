@@ -1,7 +1,6 @@
 * {
 	font-family: sans-serif;
 	font-weight: lighter;
-	font-size: 12px;
 }
 
 .chart {
@@ -11,4 +10,58 @@
 	.bar {
 		fill: steelblue;
 	}
+}
+
+
+/* clock */
+body {
+  background: #fff;
+}
+
+.clock-face {
+	stroke: #000;
+	font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+}
+
+#rim {
+  fill: none;
+  stroke: #999;
+  stroke-width: 3px;
+}
+
+.second-hand{
+	stroke-width:3;
+
+}
+
+.minute-hand{
+	stroke-width:8;
+	stroke-linecap:round;
+}
+
+.hour-hand{
+	stroke-width:12;
+	stroke-linecap:round;
+}
+
+.hands-cover{
+	stroke-width:3;
+	fill:#fff;
+}
+
+.second-tick{
+	stroke-width:3;
+	fill:#000;	
+}
+
+.hour-tick{
+	stroke-width:8; //same as the miute hand
+}
+
+.second-label{
+	font-size: 12px;
+}
+
+.hour-label{
+	font-size: 24px;
 }
