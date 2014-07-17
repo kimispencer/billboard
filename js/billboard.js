@@ -4,18 +4,21 @@
 */
 
 var wordFreq;
-var width = 1220;
-var chart = d3.select(".chart")
-    .attr("width", width+100);
-
-// circle stuff
 var radians = 0.0174532925, // one degree
 	circleRadius = 500,
-	margin = 50,
-	width = (circleRadius+margin)*2,
-    height = (circleRadius+margin)*2,
+	margin = 200,
+	width = document.body.clientWidth,
+    height = (circleRadius+margin),
     tickLength = -10,
     clickPushY = 2;
+
+// setup
+var chart = d3.select(".chart")
+	.attr('height', height*2);
+
+var face = d3.select(".chart").append("g")
+    .attr("class", "clock-face")
+	.attr('transform','translate(' + width/2 + ',' + (circleRadius + margin) + ')');
 
 // load the data set (defined by user on front-end, such as by decade, by artist, genre, etc.) 
 d3.json("data/test.json", function(error, data) {
@@ -36,34 +39,32 @@ function processData(data) {
 };
 
 function visualizeData(data) {
-	chart.attr("height", function(d) { return data.length * 10 });
-	
+	// !!! resize stuff... not quiet right tho !!!
+	chart.attr("viewBox", function(d) { 
+		return "0 0 " + width + " " + width;
+	});
+
 	var circleScale = d3.scale.linear()
 		.range([0, data.length])
 		.domain([0, 2 * Math.PI]);
 
-	var face = d3.select(".chart").append("g")
-	    .attr("class", "clock-face")
-		.attr('transform','translate(' + (circleRadius + margin) + ',' + (circleRadius + margin) + ')');
-
 	// tick container
 	var bar = face.selectAll('g')
 		.data(data)
-		.enter().append('g')
+		.enter().append('g');
 		
 	bar.append('line')
 		.attr('y1',circleRadius)
 		.attr('y2',circleRadius + tickLength)
-		.attr('transform',function(d, i){
-			return 'rotate('  + circleScale(i) + ')';
-		})
 		.attr('class', 'tick');
 
 	bar.append('text')
 		.text(function(d){
 			return d.text;
 		})
-		.attr('x',circleRadius)
+		.attr('x', function(d) {
+			return circleRadius;
+		})
 		.attr('transform', function(d, i){
 			return 'rotate('  + circleScale(i) + ')';
 		})
@@ -71,7 +72,7 @@ function visualizeData(data) {
 			return d.frequency * 5;
 		})
 		.on('mousedown', function(d){
-			var word = d3.select(this).attr('dy', clickPushY);
+			var word = d3.select(this).attr('dy', clickPushY).attr("translate", "(20,2.5)");
 		})
 		.on('mouseup', function(d){
 			var word = d3.select(this).attr('dy', 0);
