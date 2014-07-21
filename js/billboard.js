@@ -67,11 +67,11 @@ function foo() {
 
 		var theta = d.theta;
 
-		d3.select(this).append('circle')
+		face.append('circle')
 			.attr('cx', circleRadius)
 			.attr('cy', 0)
-			.attr('transform', 'rotation(' + theta + ')')
-			.attr('r', 5)
+			.attr('transform', 'rotate(' + theta + ')')
+			.attr('r', 10)
 			.attr('fill', 'red')
 			// .attr('transform','translate(' + width/2 + ',' + (circleRadius + margin) + ')');
 

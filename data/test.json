@@ -3,12 +3,24 @@
 		"artist": "Katy Perry",
 		"lyrics": "He put it on me, I put it on,\nLike there was nothing wrong.\nIt didn't fit,\nIt wasn't right.\nWasn't just the size.\nThey say you know,\nWhen you know.\nI don't know.\n\nI didn't feel the fairytale feeling, no.\nAm I a stupid girl for even dreaming that I could?\n\nIf it's not like the movies,\nThat's how it should be, yeah.\nWhen he's the one,\nI'll come undone,\nAnd my world will stop spinning\nAnd that's just the beginning, yeah.\n\nSnowwhite said when I was young,\n\"One day my prince will come.\"\nSo I'll wait for that date.\nThey say it's hard to meet your match,\nGotta find my better half.\nSo we make perfect shapes.\nIf stars don't align,\nIf it doesn't stop time,\nIf you can't see the sign,\nWait for it.\nOne hundred percent,\nWorth every penny spent.\nHe'll be the one that\nFinishes your sentences.\n\nIf it's not like the movies,\nThat's how it should be, yeah.\nWhen he's the one,\nHe'll come undone,\nAnd my world will stop spinning,\nAnd that's just the beginning, oh, yeah.\n\n'Cause I know you're out there,\nAnd you're, you're looking for me, oh.\nIt's a crazy idea that you were made perfectly for me\nYou'll see.\n\nJust like the movies.\nThat's how it will be.\nCinematic and dramatic with the perfect ending, oh.\n\nIt's not like the movies, oh,\nBut that's how it should be, yeah.\nWhen he's the one,\nYou'll come undone,\nAnd your world will stop spinning,\nAnd it's just the beginning.", 
 		"track": "Not Like The Movies",
-		"genre": "Pop"
+		"genre": "Pop",
+		"relationships": [
+			[
+			"you", 
+			"night"
+			]
+		]
 	},
 	{
 		"artist": "Katy Perry",
 	    "lyrics": "There's a stranger in my bed,\nThere's a pounding in my head\nGlitter all over the room\nPink flamingos in the pool\nI smell like a minibar\nD J's passed out in the yard\nBarbie's on the barbeque\nThis a hickie or a bruise\n\nPictures of last night\nEnded up online\nI'm screwed\nOh well\nIt's a blacked out blur\nBut I'm pretty sure it ruled\nDamn\n\nLast Friday night\nYeah, we danced on tabletops\nAnd we took too many shots\nThink we kissed but I forgot\n\nLast Friday night\nYeah, we maxed our credit cards\nAnd got kicked out of the bar\nSo we hit the boulevard\n\nLast Friday night\nWe went streaking in the park\nSkinny dipping in the dark\nThen had a m\u00c3\u00a9nage \u00c3\u00a0 trois\nLast Friday night\nYeah I think we broke the law\nAlways say we're gonna stop\nOp-oh-oh\n\nThis Friday night\nDo it all again\nThis Friday night\nDo it all again\n\nTrying to connect the dots\nDon't know what to tell my boss\nThink the city towed my car\nChandeliers on the floor\nRipped my favorite party dress\nWarrant's out for my arrest\nThink I need a ginger ale\nThat was such an epic fail\n\nPictures of last night\nEnded up online\nI'm screwed\nOh well\nIt's a blacked out blur\nBut I'm pretty sure it ruled\nDamn\n\nLast Friday night\nYeah, we danced on table tops\nAnd we took too many shots\nThink we kissed but I forgot\n\nLast Friday night\nYeah, we maxed our credit cards\nAnd got kicked out of the bar\nSo we hit the boulevard\n\nLast Friday night\nWe went streaking in the park\nSkinny dipping in the dark\nThen had a m\u00c3\u00a9nage \u00c3\u00a0 trois\n\nLast Friday night\nYeah I think we broke the law\nAlways say we're gonna stop\nOh whoa oh\n\nThis Friday night\nDo it all again\n(Do it all again)\nThis Friday night\nDo it all again\n(Do it all again)\nThis Friday night\n\nT.G.I.F.\nT.G.I.F.\nT.G.I.F.\nT.G.I.F.\nT.G.I.F.\nT.G.I.F.\n\nLast Friday night\nYeah, we danced on table tops\nAnd we took too many shots\nThink we kissed but I forgot\n\nLast Friday night\nYeah, we maxed our credit cards\nAnd got kicked out of the bar\nSo we hit the boulevard\n\nLast Friday night\nWe went streaking in the park\nSkinny dipping in the dark\nThen had a m\u00c3\u00a9nage \u00c3\u00a0 trois\n\nLast Friday night\nYeah I think we broke the law\nAlways say we're gonna stop\nOh-whoa-oh\nThis Friday night\nDo it all again\n\n[Clapping] Whohoo!", 
 		"track": "Last Friday Night (T.G.I.F.)",
-		"genere": "Pop"
+		"genere": "Pop",
+		"relationships": [
+			[
+			"friday", 
+			"we"
+			]
+		]
 	}
 ]
