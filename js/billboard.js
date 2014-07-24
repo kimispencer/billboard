@@ -25,14 +25,6 @@ var face = d3.select(".chart").append("g")
 	.attr("class", "clock-face")
 	.attr('transform','translate(' + width/2 + ',' + (circleRadius + margin) + ')');
 
-// !!! TESTING
-// 0, 0 center of circle
-face.append('circle')
-	.attr('cx', 0)
-	.attr('cy', 0)
-	.attr('r', 10)
-	.attr('stroke', 'white')
-
 // load the data set (defined by user on front-end, such as by decade, by artist, genre, etc.) 
 d3.json("data/test.json", function(error, raw) {
 	processData(raw);
@@ -73,6 +65,23 @@ function processData(raw) {
 function visualizeData(data) {
 	drawCircle(data);
 	drawRelationshipArcs();
+	displayText();
+};
+
+// SVG rotations use DEGREES
+function radiansToDegrees(radians) {
+	var degrees = radians * (180/Math.PI);
+	return degrees;
+};
+
+// calculate position based on RADIANS
+function calcPosition(centerX, centerY, radius, theta) {
+	var coords = {};
+	var x = centerX + radius * Math.cos(theta);
+    var y = centerY + radius * Math.sin(theta);
+    coords.x = x;
+    coords.y = y;
+    return coords;
 };
 
 // layout words in a circle
@@ -120,20 +129,6 @@ function drawCircle(data) {
 		.attr('class', 'word');
 };
 
-function radiansToDegrees(radians) {
-	var degrees = radians * (180/Math.PI);
-	return degrees;
-};
-
-function calcPosition(centerX, centerY, radius, theta) {
-	var coords = {};
-	var x = centerX + radius * Math.cos(theta);
-    var y = centerY + radius * Math.sin(theta);
-    coords.x = x;
-    coords.y = y;
-    return coords;
-};
-
 function drawRelationshipArcs() {
 	face.selectAll('g')
 		.on('mousedown', function(d, i) {
@@ -170,9 +165,12 @@ function drawRelationshipArcs() {
 						// .attr('d', 'M' + circleRadius + ',' + 0 + ' Q' + 0 + ',' + 0 + ' ' + targetX +',' + targetX)
            	}
 	});
-}
+};
 
-
-
-
-
+function displayText() {
+	face.selectAll('g')
+		.on('mouseover', function(d, i) {
+			d3.select('.text-display')
+				.text(d.text)
+		});
+};
