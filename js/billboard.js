@@ -6,7 +6,7 @@
 var data;
 var radians = 0.0174532925, // one degree
 	circleRadius = 500,
-	margin = 200,
+	margin = 100,
 	width = document.body.clientWidth,
     height = (circleRadius+margin),
     tickLength = -10,
@@ -15,7 +15,8 @@ var radians = 0.0174532925, // one degree
 
 // setup
 var chart = d3.select(".chart")
-	.attr('height', height*2)
+	.attr('height', height * 2)
+	.attr('width', width)
     .attr("preserveAspectRatio", "xMinYMin meet");
 	chart.attr("viewBox", "0 0 " + width + " " + width);
 
@@ -23,6 +24,14 @@ var chart = d3.select(".chart")
 var face = d3.select(".chart").append("g")
 	.attr("class", "clock-face")
 	.attr('transform','translate(' + width/2 + ',' + (circleRadius + margin) + ')');
+
+// !!! TESTING
+// 0, 0 center of circle
+face.append('circle')
+	.attr('cx', 0)
+	.attr('cy', 0)
+	.attr('r', 10)
+	.attr('stroke', 'white')
 
 // load the data set (defined by user on front-end, such as by decade, by artist, genre, etc.) 
 d3.json("data/test.json", function(error, raw) {
@@ -68,26 +77,21 @@ function visualizeData(data) {
 
 // layout words in a circle
 function drawCircle(data) {
-	// scale data set to 360 degrees
 	var circleScale = d3.scale.linear()
-		.range([0, data.length])
-		.domain([0, 60]); //2 * Math.PI]);
+		.range([0, 2 * Math.PI])	// radians
+		.domain([0, data.length]);
 
 	// tick container
 	var bar = face.selectAll('g')
 		.data(data)
 		.enter().append('g')
 		.attr('transform', function(d, i) {
-			return 'rotate('  + circleScale(i) + ')';
+			// SVG rotation uses degrees
+			return 'rotate('  + radiansToDegrees(circleScale(i)) + ')';
 		})
 		.each(function(d, i) {
-			// set theta
+			// set theta in radians
 			d.theta = circleScale(i);
-
-			// var theta = d.theta;
-			// var x = circleRadius * Math.cos(theta);
-			// var y = circleRadius * Math.sin(theta);
-			// console.log(x + ", " + y)
 		});
 
 	// line
@@ -116,20 +120,36 @@ function drawCircle(data) {
 		.attr('class', 'word');
 };
 
-// !!! ARGHHHHH
+function radiansToDegrees(radians) {
+	var degrees = radians * (180/Math.PI);
+	return degrees;
+};
+
 function calcPosition(centerX, centerY, radius, theta) {
 	var coords = {};
 	var x = centerX + radius * Math.cos(theta);
-    var y = centerX + radius * Math.sin(theta);
+    var y = centerY + radius * Math.sin(theta);
     coords.x = x;
     coords.y = y;
 
+    console.log(theta)
     return coords;
 };
 
 function drawRelationshipArcs() {
 	face.selectAll('g')
 		.on('mousedown', function(d, i) {
+			console.log(d)
+
+			// origin
+			face.append('circle')
+				.attr('cx', circleRadius)
+				.attr('cy', 0)
+				// SVG rotation uses degrees
+				.attr('transform', 'rotate(' + radiansToDegrees(d.theta) + ')')
+				.attr('r', 10)
+				.attr('fill', 'red')
+
 			// set the target
 			var targetWord;
 			d3.keys(d).forEach(function(key) {
@@ -142,59 +162,25 @@ function drawRelationshipArcs() {
 	           	}
 	        });
 
-           	// find the target's theta
+           	// target's theta
            	var targetTheta;
            	d3.values(data).forEach(function(value) {
            		if(value.text===targetWord) {
-           			// console.log(value.text)
-           			// console.log(value.theta)
            			targetTheta = value.theta;
            		}
            	});
 
-           	// ORIGIN
-           	// add circle to the "g" element (which has a rotation applied)
-			// d3.select(this).append('circle')
-			// 	.attr('cx', circleRadius)
-			// 	.attr('cy', 0)
-			// 	.attr('r', 20)
-			// 	.attr('fill', 'pink')
+           	if(typeof targetTheta === 'number') {
+				// x/y coords based on theta (radians)
+				var target = calcPosition(0, 0, circleRadius, targetTheta);
+				face.append('circle')
+					.attr('cx', target.x)
+					.attr('cy', target.y)
+					.attr('r', 10)
+					.attr('fill', 'yellow')
+           	}
 
-			// ORIGIN
-			// add circle (which has a rotation applied) to the "face"
-			face.append('circle')
-				.attr('cx', circleRadius)
-				.attr('cy', 0)
-				.attr('transform', 'rotate(' + d.theta + ')')
-				.attr('r', 10)
-				.attr('fill', 'red')
-
-			// !!! ARGHHHH
-			var origin = calcPosition(0, 0, circleRadius, d.theta);
-
-			// ORIGIN
-			face.append('circle')
-				.attr('cx', origin.x)
-				.attr('cy', origin.y)
-				.attr('r', 5)
-				.attr('fill', 'yellow')
-
-			// TARGET
-			// face.append('circle')
-			// 	.attr('cx', circleRadius)
-			// 	.attr('cy', 0)
-			// 	.attr('transform', 'rotate(' + targetTheta + ')')
-			// 	.attr('r', 10)
-			// 	.attr('fill', 'orange');
-
-			// var target = calcPosition(0, 0, circleRadius, targetTheta);
-
-	        // TARGET
-			// face.append('circle')
-			// 	.attr('cx', target.x)
-			// 	.attr('cy', target.y)
-			// 	.attr('r', 10)
-			// 	.attr('fill', 'orange');
+           	// draw bezier curve
 
 			// draw bezier curve from start to center to relationship words
 			// face.append('path')
