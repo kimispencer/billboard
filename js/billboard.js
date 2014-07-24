@@ -131,24 +131,14 @@ function calcPosition(centerX, centerY, radius, theta) {
     var y = centerY + radius * Math.sin(theta);
     coords.x = x;
     coords.y = y;
-
-    console.log(theta)
     return coords;
 };
 
 function drawRelationshipArcs() {
 	face.selectAll('g')
 		.on('mousedown', function(d, i) {
-			console.log(d)
-
 			// origin
-			face.append('circle')
-				.attr('cx', circleRadius)
-				.attr('cy', 0)
-				// SVG rotation uses degrees
-				.attr('transform', 'rotate(' + radiansToDegrees(d.theta) + ')')
-				.attr('r', 10)
-				.attr('fill', 'red')
+			var origin = calcPosition(0, 0, circleRadius, d.theta);
 
 			// set the target
 			var targetWord;
@@ -171,23 +161,14 @@ function drawRelationshipArcs() {
            	});
 
            	if(typeof targetTheta === 'number') {
-				// x/y coords based on theta (radians)
 				var target = calcPosition(0, 0, circleRadius, targetTheta);
-				face.append('circle')
-					.attr('cx', target.x)
-					.attr('cy', target.y)
-					.attr('r', 10)
-					.attr('fill', 'yellow')
+				// draw bezier curve from start to center to relationship words
+				face.append('path')
+					.attr('d', 'M' + origin.x + ',' + origin.y + ' Q' + 0 + ',' + 0 + ' ' + target.x +',' + target.y)
+					.attr('class', 'relationship-arc')
+					// .transition()
+						// .attr('d', 'M' + circleRadius + ',' + 0 + ' Q' + 0 + ',' + 0 + ' ' + targetX +',' + targetX)
            	}
-
-           	// draw bezier curve
-
-			// draw bezier curve from start to center to relationship words
-			// face.append('path')
-			// 	.attr('d', 'M' + circleRadius + ',' + 0 + ' Q' + 0 + ',' + 0 + ' ' + targetX +',' + targetY)
-			// 	.attr('class', 'relationship-arc')
-				// .transition()
-					// .attr('d', 'M' + circleRadius + ',' + 0 + ' Q' + 0 + ',' + 0 + ' ' + targetX +',' + targetX)
 	});
 }
 
