@@ -34,17 +34,18 @@ var face = d3.select(".chart").append("g")
 
 // load the data set (defined by user on front-end, such as by decade, by artist, genre, etc.) 
 d3.json("data/test.json", function(error, raw) {
-	// data processing
+	// process data
 	processData(raw);
 	circleData(data);
 	lineData(data);
-	// visualization
-	visualizeData(data);
+
+	// visualize data
+	visualizeData();
 });
 
 // all visualization functions
-function visualizeData(data) {
-	drawCircle(data);
+function visualizeData() {
+	drawCircle();
 	displayText();
 };
 
@@ -86,15 +87,15 @@ function processData(raw) {
 function circleData(data) {
 	// rotation scale
 	var circleScale = d3.scale.linear()
-		.range([0, 2 * Math.PI])	// radians
+		.range([0, 2 * Math.PI])	// returns RADIANS
 		.domain([0, data.length]);
 
 	// set circular coordinates
 	data.forEach(function(d, i) {
 		// d.theta in DEGREES
 		d.theta = radiansToDegrees(circleScale(i));
-		// set x,y circle coords (but requires RADIANS)
-		d.circleCoords = calcPosition(0, 0, circleRadius, degreesToRadians(d.theta));
+		// set x,y circle coords
+		d.circleCoords = calcPosition(0, 0, circleRadius, d.theta);
 	});
 };
 
@@ -117,7 +118,7 @@ function lineData(data) {
 	* COVERSION FUNCTIONS
 */
 
-// SVG rotations use DEGREES
+// SVG / CSS rotations use DEGREES
 function radiansToDegrees(radians) {
 	var degrees = radians * (180/Math.PI);
 	return degrees;
@@ -131,8 +132,8 @@ function degreesToRadians(degrees) {
 // calculate position based on RADIANS
 function calcPosition(centerX, centerY, radius, theta) {
 	var coords = {};
-	var x = centerX + radius * Math.cos(theta);
-    var y = centerY + radius * Math.sin(theta);
+	var x = centerX + radius * Math.cos(degreesToRadians(theta));
+    var y = centerY + radius * Math.sin(degreesToRadians(theta));
     coords.x = x;
     coords.y = y;
     return coords;
@@ -143,7 +144,7 @@ function calcPosition(centerX, centerY, radius, theta) {
 */
 
 // animation from circle to line
-function transitionToLine(data) {
+function transitionToLine() {
 	// remove relationship arcs from circle
 	face.selectAll('.circular-relationship-arc').remove();
 
@@ -151,6 +152,11 @@ function transitionToLine(data) {
 		.duration(1000)
 		.ease('linear')
 		.attr('transform','translate(' + 0 + ',' + (circleRadius + margin) + ')');
+
+	var bar = face.selectAll('g')
+		.data(data)
+		.enter().append('g')
+		.attr('class', 'bar');
 
 	face.selectAll('text')
 		.transition()
@@ -161,12 +167,17 @@ function transitionToLine(data) {
 		})
 		.attr('y', function(d) {
 			return d.lineCoords.y;
+		})
+		.attr('transform', function(d) {
+			// return 'rotate(0)';
 		});
+	drawRelationshipArcs('line');
+
 	face.on('click', transitionToCircle);
 };
 
 // animation from to line to circle
-function transitionToCircle(data) {
+function transitionToCircle() {
 	face.transition()
 		.duration(1000)
 		.ease('linear')
@@ -182,6 +193,8 @@ function transitionToCircle(data) {
 		.attr('y', function(d) {
 			return d.circleCoords.y;
 		});
+	drawRelationshipArcs('circle');
+
 	face.on('click', transitionToLine);
 };
 
@@ -190,10 +203,11 @@ function transitionToCircle(data) {
 */
 
 // draw circle + relationship arcs
-function drawCircle(data) {
+function drawCircle() {
 	var bar = face.selectAll('g')
 		.data(data)
-		.enter().append('g');
+		.enter().append('g')
+		.attr('class', 'bar');
 
 	bar.append('text')
 		.text(function(d) {
@@ -208,22 +222,26 @@ function drawCircle(data) {
 		})
 		.attr('y', function(d) {
 			return d.circleCoords.y
+		})
+		.attr('transform', function(d) {
+			// return 'rotate(' + d.theta + ')';
 		});
+
 	face.on('click', function() {
 		transitionToLine(data);
 	});
 
-	drawCircularRelationshipArcs();
+	drawRelationshipArcs('circle');
 };
 
-function drawCircularRelationshipArcs() {
+function drawRelationshipArcs(shape) {
 	face.selectAll('g')
-		// .on('mousedown', function(d, i) {
 		.each(function(d, i) {
-			// origin
-			var origin = calcPosition(0, 0, circleRadius, d.theta);
+			// set the origin location
+			if(shape==='circle') var origin = d.circleCoords;
+			if(shape==='line') var origin =d.lineCoords;
 
-			// set the target
+			// find the target word
 			var targetWord;
 			d3.keys(d).forEach(function(key) {
 	           	if(key==="relationships") {
@@ -235,25 +253,59 @@ function drawCircularRelationshipArcs() {
 	           	}
 	        });
 
-           	// target's theta
-           	var targetTheta;
+           	// set the target location
+           	var target;
            	d3.values(data).forEach(function(value) {
            		if(value.text===targetWord) {
-           			targetTheta = value.theta;
+           			if(shape==='circle') target = value.circleCoords;
+           			if(shape==='line') target = value.lineCoords;
            		}
            	});
 
-           	if(typeof targetTheta === 'number') {
-				var target = calcPosition(0, 0, circleRadius, targetTheta);
+           	if(target) {
+           		if(shape==='circle') midPoint = {x:0, y:0};
 				// draw bezier curve from start to center to relationship words
 				face.append('path')
-					.attr('d', 'M' + origin.x + ',' + origin.y + ' Q' + 0 + ',' + 0 + ' ' + target.x +',' + target.y)
-					// .attr('d', 'M' + origin.x + ',' + origin.y + ' Q' + 0 + ',' + 0 + ' ' + 0 +',' + 0)
+					.attr('d', 'M' + origin.x + ',' + origin.y + ' Q' + midPoint.x + ',' + midPoint.y + ' ' + target.x +',' + target.y)
 					.attr('class', 'circular-relationship-arc')
-					// .transition()
-						// .attr('d', 'M' + origin.x + ',' + origin.y + ' Q' + 0 + ',' + 0 + ' ' + target.x +',' + target.y)
            	}
 	});
+};
+
+function drawLinearRelationshipArcs() {
+	face.selectAll('g')
+		.each(function(d, i) {
+			// origin
+			var origin = d.lineCoords;
+
+			// set the target
+			var target;
+			d3.keys(d).forEach(function(key) {
+	           	if(key==="relationships") {
+	           		d[key].forEach(function(v) {
+	           			if(d.text!=v) {
+	           				// targetWord = v;
+	           				target = d.lineCoords;
+	           				// console.log(target)
+   							face.append('circle')
+								.attr('fill', 'red')
+								.attr('r', 5)
+								.attr('cx', target.x)
+								.attr('cy', target.y);
+   							face.append('circle')
+								.attr('fill', 'yellow')
+								.attr('r', 5)
+								.attr('cx', origin.x)
+								.attr('cy', origin.y);
+
+							face.append('path')
+								.attr('d', 'M' + origin.x + ',' + origin.y + ' Q' + 100 + ',' + 100 + ' ' + target.x +',' + target.y)
+	           			}
+	           		})
+	           	}
+			});
+
+		});
 };
 
 function displayText() {

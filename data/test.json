@@ -6,8 +6,8 @@
 		"genre": "Pop",
 		"relationships": [
 			[
-			"you", 
-			"tell"
+				"you", 
+				"tell"
 			],
 			[
 				"fairytale",
@@ -26,8 +26,8 @@
 		"genere": "Pop",
 		"relationships": [
 			[
-			"friday", 
-			"last"
+				"friday", 
+				"last"
 			],
 			[
 				"love",
