@@ -145,8 +145,7 @@ function calcPosition(centerX, centerY, radius, theta) {
 
 // animation from circle to line
 function transitionToLine() {
-	// remove relationship arcs from circle
-	face.selectAll('.circular-relationship-arc').remove();
+	face.selectAll('.relationship-arc').remove();
 
 	face.transition()
 		.duration(1000)
@@ -178,6 +177,8 @@ function transitionToLine() {
 
 // animation from to line to circle
 function transitionToCircle() {
+	face.selectAll('.relationship-arc').remove();
+
 	face.transition()
 		.duration(1000)
 		.ease('linear')
@@ -262,50 +263,18 @@ function drawRelationshipArcs(shape) {
            		}
            	});
 
+           	var midPoint;
            	if(target) {
-           		if(shape==='circle') midPoint = {x:0, y:0};
-				// draw bezier curve from start to center to relationship words
+           		// center of circle
+           		if(shape==='circle') midPoint = {x: 0, y: 0};
+           		// midpoint between origin & target
+           		if(shape==='line') midPoint = {x: (origin.x+target.x)/2, y: -500}; 
+				// draw bezier curve
 				face.append('path')
 					.attr('d', 'M' + origin.x + ',' + origin.y + ' Q' + midPoint.x + ',' + midPoint.y + ' ' + target.x +',' + target.y)
-					.attr('class', 'circular-relationship-arc')
+					.attr('class', 'relationship-arc')
            	}
 	});
-};
-
-function drawLinearRelationshipArcs() {
-	face.selectAll('g')
-		.each(function(d, i) {
-			// origin
-			var origin = d.lineCoords;
-
-			// set the target
-			var target;
-			d3.keys(d).forEach(function(key) {
-	           	if(key==="relationships") {
-	           		d[key].forEach(function(v) {
-	           			if(d.text!=v) {
-	           				// targetWord = v;
-	           				target = d.lineCoords;
-	           				// console.log(target)
-   							face.append('circle')
-								.attr('fill', 'red')
-								.attr('r', 5)
-								.attr('cx', target.x)
-								.attr('cy', target.y);
-   							face.append('circle')
-								.attr('fill', 'yellow')
-								.attr('r', 5)
-								.attr('cx', origin.x)
-								.attr('cy', origin.y);
-
-							face.append('path')
-								.attr('d', 'M' + origin.x + ',' + origin.y + ' Q' + 100 + ',' + 100 + ' ' + target.x +',' + target.y)
-	           			}
-	           		})
-	           	}
-			});
-
-		});
 };
 
 function displayText() {
