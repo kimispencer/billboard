@@ -13,7 +13,11 @@ var radians = 0.0174532925, // one degree
     clickPushY = 2,
     face;
 
-// setup
+/*
+	* SETUP
+*/
+
+// chart
 var chart = d3.select(".chart")
 	.attr('height', height * 2)
 	.attr('width', width)
@@ -30,9 +34,23 @@ var face = d3.select(".chart").append("g")
 
 // load the data set (defined by user on front-end, such as by decade, by artist, genre, etc.) 
 d3.json("data/test.json", function(error, raw) {
+	// data processing
 	processData(raw);
+	circleData(data);
+	lineData(data);
+	// visualization
 	visualizeData(data);
 });
+
+// all visualization functions
+function visualizeData(data) {
+	drawCircle(data);
+	displayText();
+};
+
+/*
+	* DATA PROCESSING FUNCTIONS
+*/
 
 // process data to find word frequencies of the sample set
 function processData(raw) {
@@ -64,22 +82,7 @@ function processData(raw) {
 	});
 };
 
-// all visualization functions
-function visualizeData(data) {
-	// drawCircle(data);
-	// drawRelationshipArcs();
-	// displayText();
-
-	// testing
-	circleData(data);
-	lineData(data);
-	drawCircleFoo(data);
-};
-
-// 1. set circle data (x,y coords on a circle)
-// 2. set line data (x,y coords on a line)
-// 3. use the svg "d" attr to transition between circle & line coords
-
+// set circle coords
 function circleData(data) {
 	// rotation scale
 	var circleScale = d3.scale.linear()
@@ -92,34 +95,10 @@ function circleData(data) {
 		d.theta = radiansToDegrees(circleScale(i));
 		// set x,y circle coords (but requires RADIANS)
 		d.circleCoords = calcPosition(0, 0, circleRadius, degreesToRadians(d.theta));
-		// console.log(d.circleCoords)
 	});
-
-	// draw circle test
-	// var bar = face.selectAll('g')
-	// 	.data(data)
-	// 	.enter().append('g');
-
-	// bar.append('text')
-	// 	.text(function(d) {
-	// 		return d.text;
-	// 	})
-	// 	.attr('font-size', function(d) {
-	// 		return d.frequency * 5;
-	// 	})
-	// 	.attr('class', 'word')
-	// 	// .attr('transform', function(d) {
-	// 	// 	return 'rotate(' + d.theta + ")";
-	// 	// })
-	// 	// .attr('x', 100);
-	// 	.attr('x', function(d) {
-	// 		return d.circleCoords.x;
-	// 	})
-	// 	.attr('y', function(d) {
-	// 		return d.circleCoords.y
-	// 	});
 };
 
+// set line coords
 function lineData(data) {
 	var lineScale = d3.scale.linear()
 		// line length based on circle size
@@ -131,107 +110,12 @@ function lineData(data) {
 		d.lineCoords = {};
 		d.lineCoords.x = lineScale(i);
 		d.lineCoords.y = 0;
-		// console.log(d)
-	});
-
-	// tick container
-	// var bar = face.selectAll('g')
-	// 	.data(data)
-	// 	.enter().append('g');
-
-	// // text
-	// bar.append('text')
-	// 	.text(function(d){
-	// 		return d.text;
-	// 	})
-	// 	.attr('transform', 'rotate(-90)')
-	// 	.attr('font-size', function(d) {
-	// 		return d.frequency * 5;
-	// 	})
-	// 	.attr('class', 'word')
-	// 	.attr('x', function(d) {
-	// 		return d.lineCoords.x;
-	// 	})
-	// 	.attr('y', function(d) {
-	// 		return d.lineCoords.y;
-	// 	});
-};
-
-// accessor function?
-var lineFunction = d3.svg.line()
-	.x(function (d) {return d.x;})
-	.y(function (d) {return d.y;})
-	.interpolate("cardinal");
-
-function transitionToLine(data) {
-	console.log("transition to Line")
-
-	face.transition()
-		.duration(1000)
-		.ease('linear')
-		.attr('transform','translate(' + 0 + ',' + (circleRadius + margin) + ')');
-
-	face.selectAll('text')
-		.transition()
-        .duration(1000)
-        .ease('linear')
-		.attr('x', function(d) {
-			return d.lineCoords.x;
-		})
-		.attr('y', function(d) {
-			return d.lineCoords.y;
-		});
-	face.on('click', transitionToCircle);
-};
-
-function transitionToCircle(data) {
-	console.log("transition to Circle")
-
-	face
-		.transition()
-		.duration(1000)
-		.ease('linear')
-		.attr('transform','translate(' + width/2 + ',' + (circleRadius + margin) + ')');
-
-	face.selectAll('text')
-		.transition()
-		.duration(1000)
-		.ease('linear')
-		.attr('x', function(d) {
-			return d.circleCoords.x;
-		})
-		.attr('y', function(d) {
-			return d.circleCoords.y;
-		});
-	face.on('click', transitionToLine);
-
-};
-
-function drawCircleFoo(data) {
-	var bar = face.selectAll('g')
-		.data(data)
-		.enter().append('g');
-
-	bar.append('text')
-		.text(function(d) {
-			return d.text;
-		})
-		.attr('font-size', function(d) {
-			return d.frequency * 5;
-		})
-		.attr('class', 'word')
-		.attr('x', function(d) {
-			return d.circleCoords.x;
-		})
-		.attr('y', function(d) {
-			return d.circleCoords.y
-		});
-	face.on('click', function() {
-		transitionToLine(data);
 	});
 };
 
-// !!! SAFE
+/* 
+	* COVERSION FUNCTIONS
+*/
 
 // SVG rotations use DEGREES
 function radiansToDegrees(radians) {
@@ -254,55 +138,85 @@ function calcPosition(centerX, centerY, radius, theta) {
     return coords;
 };
 
-// layout words in a circle
-function drawCircle(data) {
-	var circleScale = d3.scale.linear()
-		.range([0, 2 * Math.PI])	// radians
-		.domain([0, data.length]);
+/*
+	* ANIMATION FUNCTIONS
+*/
 
-	// tick container
+// animation from circle to line
+function transitionToLine(data) {
+	// remove relationship arcs from circle
+	face.selectAll('.circular-relationship-arc').remove();
+
+	face.transition()
+		.duration(1000)
+		.ease('linear')
+		.attr('transform','translate(' + 0 + ',' + (circleRadius + margin) + ')');
+
+	face.selectAll('text')
+		.transition()
+        .duration(1000)
+        .ease('linear')
+		.attr('x', function(d) {
+			return d.lineCoords.x;
+		})
+		.attr('y', function(d) {
+			return d.lineCoords.y;
+		});
+	face.on('click', transitionToCircle);
+};
+
+// animation from to line to circle
+function transitionToCircle(data) {
+	face.transition()
+		.duration(1000)
+		.ease('linear')
+		.attr('transform','translate(' + width/2 + ',' + (circleRadius + margin) + ')');
+
+	face.selectAll('text')
+		.transition()
+		.duration(1000)
+		.ease('linear')
+		.attr('x', function(d) {
+			return d.circleCoords.x;
+		})
+		.attr('y', function(d) {
+			return d.circleCoords.y;
+		});
+	face.on('click', transitionToLine);
+};
+
+/*
+	* DRAW STUFF
+*/
+
+// draw circle + relationship arcs
+function drawCircle(data) {
 	var bar = face.selectAll('g')
 		.data(data)
-		.enter().append('g')
-		.attr('transform', function(d, i) {
-			// SVG rotation uses degrees
-			return 'rotate('  + radiansToDegrees(circleScale(i)) + ')';
-		})
-		.each(function(d, i) {
-			// set theta in radians
-			d.theta = circleScale(i);
-		});
+		.enter().append('g');
 
-	// line
-	bar.append('line')
-		.attr('x1',circleRadius)
-		.attr('x2',circleRadius + tickLength)	
-		.attr('class', 'tick');
-
-	// text
 	bar.append('text')
-		.text(function(d){
+		.text(function(d) {
 			return d.text;
-		})
-		.attr('x', function(d) {
-			return circleRadius;
 		})
 		.attr('font-size', function(d) {
 			return d.frequency * 5;
 		})
-		.attr('dx', function(d) {
-			return d.frequency * 2;
+		.attr('class', 'word')
+		.attr('x', function(d) {
+			return d.circleCoords.x;
 		})
-		.on('mousedown', function(d){
-			var word = d3.select(this).attr('dy', clickPushY).attr("translate", "(20,2.5)");
-		})
-		.on('mouseup', function(d){
-			var word = d3.select(this).attr('dy', 0);
-		})
-		.attr('class', 'word');
+		.attr('y', function(d) {
+			return d.circleCoords.y
+		});
+	face.on('click', function() {
+		transitionToLine(data);
+	});
+
+	drawCircularRelationshipArcs();
 };
 
-function drawRelationshipArcs() {
+function drawCircularRelationshipArcs() {
 	face.selectAll('g')
 		// .on('mousedown', function(d, i) {
 		.each(function(d, i) {
@@ -335,7 +249,7 @@ function drawRelationshipArcs() {
 				face.append('path')
 					.attr('d', 'M' + origin.x + ',' + origin.y + ' Q' + 0 + ',' + 0 + ' ' + target.x +',' + target.y)
 					// .attr('d', 'M' + origin.x + ',' + origin.y + ' Q' + 0 + ',' + 0 + ' ' + 0 +',' + 0)
-					.attr('class', 'relationship-arc')
+					.attr('class', 'circular-relationship-arc')
 					// .transition()
 						// .attr('d', 'M' + origin.x + ',' + origin.y + ' Q' + 0 + ',' + 0 + ' ' + target.x +',' + target.y)
            	}
