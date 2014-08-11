@@ -28,9 +28,9 @@ var chart = d3.select(".chart")
 var face = d3.select(".chart").append("g")
 	.attr("class", "clock-face")
 	// circle
-	.attr('transform','translate(' + width/2 + ',' + (circleRadius + margin) + ')');
+	// .attr('transform','translate(' + width/2 + ',' + (circleRadius + margin) + ')');
 	// line
-	// .attr('transform','translate(' + 0 + ',' + (circleRadius + margin) + ')');
+	.attr('transform','translate(' + 0 + ',' + (circleRadius + margin) + ')');
 
 // load the data set (defined by user on front-end, such as by decade, by artist, genre, etc.) 
 d3.json("data/test.json", function(error, raw) {
@@ -45,7 +45,8 @@ d3.json("data/test.json", function(error, raw) {
 
 // all visualization functions
 function visualizeData() {
-	drawCircle();
+	// drawCircle();
+	drawLine();
 	displayText();
 };
 
@@ -203,8 +204,8 @@ function transitionToCircle() {
 	* DRAW STUFF
 */
 
-// draw circle + relationship arcs
-function drawCircle() {
+// draw line + relationship arcs on INIT
+function drawLine() {
 	var bar = face.selectAll('g')
 		.data(data)
 		.enter().append('g')
@@ -219,17 +220,46 @@ function drawCircle() {
 		})
 		.attr('class', 'word')
 		.attr('x', function(d) {
+			return d.lineCoords.x;
+		})
+		.attr('y', function(d) {
+			return d.lineCoords.y
+		});
+
+	face.on('click', function() {
+		transitionToCircle();
+	});
+
+	drawRelationshipArcs('line');
+};
+	
+// draw circle + relationship arcs on INIT
+function drawCircle() {
+	var bar = face.selectAll('g')
+		.data(data)
+		.enter().append('g')
+		.attr('class', 'bar')
+		.attr('transform', function(d, i) {
+			// return 'rotate(' + d.theta + ')';
+		})
+
+	bar.append('text')
+		.text(function(d) {
+			return d.text;
+		})
+		.attr('font-size', function(d) {
+			return d.frequency * 5;
+		})
+		.attr('class', 'word')
+		.attr('x', function(d) {
 			return d.circleCoords.x;
 		})
 		.attr('y', function(d) {
 			return d.circleCoords.y
-		})
-		.attr('transform', function(d) {
-			// return 'rotate(' + d.theta + ')';
 		});
 
 	face.on('click', function() {
-		transitionToLine(data);
+		transitionToLine();
 	});
 
 	drawRelationshipArcs('circle');
@@ -271,8 +301,12 @@ function drawRelationshipArcs(shape) {
            		if(shape==='line') midPoint = {x: (origin.x+target.x)/2, y: -500}; 
 				// draw bezier curve
 				face.append('path')
-					.attr('d', 'M' + origin.x + ',' + origin.y + ' Q' + midPoint.x + ',' + midPoint.y + ' ' + target.x +',' + target.y)
+					.attr('d', 'M' + origin.x + ',' + origin.y + ' Q' + origin.x + ',' + origin.y + ' ' + origin.x +',' + origin.y)
 					.attr('class', 'relationship-arc')
+					.transition()
+						.duration(1000)
+						.ease('linear')
+						.attr('d', 'M' + origin.x + ',' + origin.y + ' Q' + midPoint.x + ',' + midPoint.y + ' ' + target.x +',' + target.y)
            	}
 	});
 };

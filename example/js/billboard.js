@@ -1,47 +1,125 @@
 /*
+    * Animated Bezier
+*/
+var w = 250,
+    h = 300,
+    t = .5,
+    delta = .01,
+    padding = 10,
+    points = [{x: 10, y: 250}, {x: 0, y: 0}, {x: 100, y: 0}, {x: 200, y: 250}, {x: 225, y: 125}],
+    bezier = {},
+    line = d3.svg.line().x(x).y(y),
+    n = 4,
+    stroke = d3.scale.category20b(),
+    orders = d3.range(2, n + 2);
+
+var vis = d3.select("#Vis").selectAll("svg")
+    .data(orders)
+  .enter().append("svg")
+    .attr("width", w + 2 * padding)
+    .attr("height", h + 2 * padding)
+  .append("g")
+    .attr("transform", "translate(" + padding + "," + padding + ")");
+
+var last = 0;
+d3.timer(function(elapsed) {
+  t = (t + (elapsed - last) / 5000) % 1;
+  last = elapsed;
+  update();
+});
+
+function update() {
+  var interpolation = vis.selectAll("g")
+    .data(function(d) {
+        return getLevels(d, t); 
+    });
+    interpolation.enter().append("g")
+
+  var curve = vis.selectAll("path.curve")
+      .data(getCurve);
+  curve.enter().append("path")
+      .attr("class", "curve");
+  curve.attr("d", line);
+}
+
+function interpolate(d, p) {
+  if (arguments.length < 2) p = t;
+  var r = [];
+  for (var i=1; i<d.length; i++) {
+    var d0 = d[i-1], d1 = d[i];
+    r.push({x: d0.x + (d1.x - d0.x) * p, y: d0.y + (d1.y - d0.y) * p});
+  }
+  return r;
+}
+
+function getLevels(d, t_) {
+  if (arguments.length < 2) t_ = t;
+  var x = [points.slice(0, d)];
+  for (var i=1; i<d; i++) {
+    x.push(interpolate(x[x.length-1], t_));
+  }
+  return x;
+}
+
+function getCurve(d) {
+  var curve = bezier[d];
+  if (!curve) {
+    curve = bezier[d] = [];
+    for (var t_=0; t_<=1; t_+=delta) {
+      var x = getLevels(d, t_);
+      curve.push(x[x.length-1][0]);
+    }
+  }
+  return [curve.slice(0, t / delta + 1)];
+}
+
+function x(d) { return d.x; }
+function y(d) { return d.y; }
+
+/*
 	* Unroll
 */
 
 // data.length
-var numberOfPoints = 30;
-var radius = 60
-var margin = {top: 20,left: 20}
+// var numberOfPoints = 30;
+// var radius = 60
+// var margin = {top: 20,left: 20}
 
-// length of line should be based off the radius of the circle
-var lineLength = 2 * radius * Math.PI
+// // length of line should be based off the radius of the circle
+// var lineLength = 2 * radius * Math.PI
 
-// x,y coords of points on the circle
-var circleData = $.map(Array(numberOfPoints), function (d, i) {
-    var imag = margin.left + lineLength / 2 + radius * Math.sin(2 * i * Math.PI / (numberOfPoints - 1))
-    var real = margin.top + radius - radius * Math.cos(2 * i * Math.PI / (numberOfPoints - 1))
-    return {x: imag, y: real}
-})
+// // x,y coords of points on the circle
+// var circleData = $.map(Array(numberOfPoints), function (d, i) {
+//     var imag = margin.left + lineLength / 2 + radius * Math.sin(2 * i * Math.PI / (numberOfPoints - 1))
+//     var real = margin.top + radius - radius * Math.cos(2 * i * Math.PI / (numberOfPoints - 1))
+//     return {x: imag, y: real}
+// })
 
-// x,y coords of points on the line
-var lineData = $.map(Array(numberOfPoints), function (d, i) {
-    var y = margin.top + 2 * radius;
-    var x = margin.left + i * lineLength / (numberOfPoints - 1)
-    return { x: x, y: y}
-}).reverse()
+// // x,y coords of points on the line
+// var lineData = $.map(Array(numberOfPoints), function (d, i) {
+//     var y = margin.top + 2 * radius;
+//     var x = margin.left + i * lineLength / (numberOfPoints - 1)
+//     return { x: x, y: y}
+// }).reverse()
 
-//This is the accessor function we talked about above
-var lineFunction = d3.svg.line()
-    .x(function (d) {return d.x;})
-    .y(function (d) {return d.y;})
-    .interpolate("cardinal");
+// //This is the accessor function we talked about above
+// var lineFunction = d3.svg.line()
+//     .x(function (d) {return d.x;})
+//     .y(function (d) {return d.y;})
+//     .interpolate("cardinal");
 
-//The SVG Container
-var svgContainer = d3.select("body").append("svg")
-    .attr("width", 400)
-    .attr("height", 200);
+// //The SVG Container
+// var svgContainer = d3.select("body").append("svg")
+//     .attr("width", 400)
+//     .attr("height", 200);
 
-//The Circle SVG Path we draw
-var circle = svgContainer.append("g")
-    .append("path")
-    .data([circleData])
-    .attr("d", lineFunction)
-    .attr("class", "circle")
-    .on("click", transitionToLine)
+// //The Circle SVG Path we draw
+// var circle = svgContainer.append("g")
+//     .append("path")
+//     .data([circleData])
+//     .attr("d", lineFunction)
+//     .attr("class", "circle")
+//     .on("click", transitionToLine)
 
 //console.log(circleData)
 // x,y coords of points on the circle
@@ -66,28 +144,28 @@ var circle = svgContainer.append("g")
 // 		.attr("cy", d.y);
 // })
 
-function transitionToLine() {
-    circle.data([lineData])
-        .transition()
-        .duration(1000)
-        .ease("linear")
-        // .attr('d', lineFunction)
-    circle.on("click", transitionToCircle)
-}
-function transitionToCircle() {
-    circle.data([circleData])
-        .transition()
-        .duration(1000)
-        .ease("linear")
-        // .attr('d', lineFunction)
-    circle.on("click", transitionToLine)
-}
+// function transitionToLine() {
+//     circle.data([lineData])
+//         .transition()
+//         .duration(1000)
+//         .ease("linear")
+//         // .attr('d', lineFunction)
+//     circle.on("click", transitionToCircle)
+// }
+// function transitionToCircle() {
+//     circle.data([circleData])
+//         .transition()
+//         .duration(1000)
+//         .ease("linear")
+//         // .attr('d', lineFunction)
+//     circle.on("click", transitionToLine)
+// }
 
 
-    //The second SVG, a Line:
-var line = svgContainer.append("path")
-    .attr("d", lineFunction(lineData))
-    .attr("class", "line")
+//     //The second SVG, a Line:
+// var line = svgContainer.append("path")
+//     .attr("d", lineFunction(lineData))
+//     .attr("class", "line")
 
 
 
