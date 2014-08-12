@@ -12,6 +12,7 @@ var radians = 0.0174532925, // one degree
     tickLength = -10,
     clickPushY = 2,
     face;
+var time = 20000;
 
 /*
 	* SETUP
@@ -45,6 +46,7 @@ d3.json("data/test.json", function(error, raw) {
 
 // all visualization functions
 function visualizeData() {
+	// setup();
 	// drawCircle();
 	drawLine();
 	displayText();
@@ -146,6 +148,7 @@ function calcPosition(centerX, centerY, radius, theta) {
 
 // animation from circle to line
 function transitionToLine() {
+	console.log("transitionToLine()")
 	face.selectAll('.relationship-arc').remove();
 
 	face.transition()
@@ -171,13 +174,15 @@ function transitionToLine() {
 		.attr('transform', function(d) {
 			// return 'rotate(0)';
 		});
-	drawRelationshipArcs('line');
+	// drawRelationshipArcs('line');
+	setTimeout(drawRelationshipArcs('line'), time);
 
 	face.on('click', transitionToCircle);
 };
 
 // animation from to line to circle
 function transitionToCircle() {
+	console.log("transitionToCircle")
 	face.selectAll('.relationship-arc').remove();
 
 	face.transition()
@@ -195,7 +200,8 @@ function transitionToCircle() {
 		.attr('y', function(d) {
 			return d.circleCoords.y;
 		});
-	drawRelationshipArcs('circle');
+	// drawRelationshipArcs('circle');
+	setTimeout(drawRelationshipArcs('circle'), time);
 
 	face.on('click', transitionToLine);
 };
@@ -204,12 +210,43 @@ function transitionToCircle() {
 	* DRAW STUFF
 */
 
+// !!! should combine setup stuff here (repeating code)
+// function setup() {
+// 	var bar = face.selectAll('g')
+// 		.data(data)
+// 		.enter().append('g')
+// 		.attr('class', 'bar');
+
+// 	bar.append('text')
+// 		.text(function(d) {
+// 			return d.text;
+// 		})
+// 		.attr('font-size', function(d) {
+// 			return d.frequency * 5;
+// 		})
+// 		.attr('class', 'word')
+// 		.attr('x', function(d) {
+// 			return d.lineCoords.x;
+// 		})
+// 		.attr('y', function(d) {
+// 			return d.lineCoords.y
+// 		});
+// };
+
 // draw line + relationship arcs on INIT
-function drawLine() {
+function drawLine() {	
+	console.log('drawLine()')
+
 	var bar = face.selectAll('g')
 		.data(data)
 		.enter().append('g')
 		.attr('class', 'bar');
+
+	bar.append('circle')
+		.attr('class', 'circle')
+		.attr('r', 20)
+		.attr('cx', 0)
+		.attr('cy', 0)
 
 	bar.append('text')
 		.text(function(d) {
@@ -224,6 +261,9 @@ function drawLine() {
 		})
 		.attr('y', function(d) {
 			return d.lineCoords.y
+		})
+		.attr('transform', function(d) {
+			return 'rotate(-90,' + d.lineCoords.x + ',' + d.lineCoords.y + ')';
 		});
 
 	face.on('click', function() {
@@ -266,6 +306,8 @@ function drawCircle() {
 };
 
 function drawRelationshipArcs(shape) {
+	console.log('drawRelationshipArcs()');
+
 	face.selectAll('g')
 		.each(function(d, i) {
 			// set the origin location
