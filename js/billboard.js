@@ -12,7 +12,7 @@ var radians = 0.0174532925, // one degree
     tickLength = -10,
     clickPushY = 2,
     face;
-var time = 20000;
+var time = 1000;
 
 /*
 	* SETUP
@@ -28,10 +28,6 @@ var chart = d3.select(".chart")
 // clock face
 var face = d3.select(".chart").append("g")
 	.attr("class", "clock-face")
-	// circle
-	// .attr('transform','translate(' + width/2 + ',' + (circleRadius + margin) + ')');
-	// line
-	.attr('transform','translate(' + 0 + ',' + (circleRadius + margin) + ')');
 
 // load the data set (defined by user on front-end, such as by decade, by artist, genre, etc.) 
 d3.json("data/test.json", function(error, raw) {
@@ -47,8 +43,8 @@ d3.json("data/test.json", function(error, raw) {
 // all visualization functions
 function visualizeData() {
 	// setup();
-	// drawCircle();
-	drawLine();
+	drawCircle();
+	// drawLine();
 	displayText();
 };
 
@@ -58,7 +54,6 @@ function visualizeData() {
 
 // process data to find word frequencies of the sample set
 function processData(raw) {
-	// console.log(raw[0])
 	var allLyrics = [],
 		allRelationships = [];
 
@@ -148,11 +143,12 @@ function calcPosition(centerX, centerY, radius, theta) {
 
 // animation from circle to line
 function transitionToLine() {
-	console.log("transitionToLine()")
 	face.selectAll('.relationship-arc').remove();
+	face.selectAll('text')
+		.attr('transform', 'rotate(0)');
 
 	face.transition()
-		.duration(1000)
+		.duration(time)
 		.ease('linear')
 		.attr('transform','translate(' + 0 + ',' + (circleRadius + margin) + ')');
 
@@ -163,36 +159,40 @@ function transitionToLine() {
 
 	face.selectAll('text')
 		.transition()
-        .duration(1000)
+        .duration(time)
         .ease('linear')
 		.attr('x', function(d) {
 			return d.lineCoords.x;
 		})
 		.attr('y', function(d) {
 			return d.lineCoords.y;
-		})
-		.attr('transform', function(d) {
-			// return 'rotate(0)';
 		});
-	// drawRelationshipArcs('line');
-	setTimeout(drawRelationshipArcs('line'), time);
+
+	setTimeout(function() {
+		face.selectAll('text')
+			.attr('transform', function(d) {
+				return 'rotate(-90,' + d.lineCoords.x + ',' + d.lineCoords.y+ ')';
+			})
+		drawRelationshipArcs('line');	
+	}, time);
 
 	face.on('click', transitionToCircle);
 };
 
 // animation from to line to circle
 function transitionToCircle() {
-	console.log("transitionToCircle")
 	face.selectAll('.relationship-arc').remove();
+	face.selectAll('text')
+		.attr('transform', 'rotate(0)');
 
 	face.transition()
-		.duration(1000)
+		.duration(time)
 		.ease('linear')
 		.attr('transform','translate(' + width/2 + ',' + (circleRadius + margin) + ')');
 
 	face.selectAll('text')
 		.transition()
-		.duration(1000)
+		.duration(time)
 		.ease('linear')
 		.attr('x', function(d) {
 			return d.circleCoords.x;
@@ -200,8 +200,10 @@ function transitionToCircle() {
 		.attr('y', function(d) {
 			return d.circleCoords.y;
 		});
-	// drawRelationshipArcs('circle');
-	setTimeout(drawRelationshipArcs('circle'), time);
+
+	setTimeout(function() {
+		drawRelationshipArcs('circle');
+	}, time);
 
 	face.on('click', transitionToLine);
 };
@@ -235,7 +237,7 @@ function transitionToCircle() {
 
 // draw line + relationship arcs on INIT
 function drawLine() {	
-	console.log('drawLine()')
+	face.attr('transform','translate(' + 0 + ',' + (circleRadius + margin) + ')');
 
 	var bar = face.selectAll('g')
 		.data(data)
@@ -262,6 +264,7 @@ function drawLine() {
 		.attr('y', function(d) {
 			return d.lineCoords.y
 		})
+		// center of rotation
 		.attr('transform', function(d) {
 			return 'rotate(-90,' + d.lineCoords.x + ',' + d.lineCoords.y + ')';
 		});
@@ -275,13 +278,12 @@ function drawLine() {
 	
 // draw circle + relationship arcs on INIT
 function drawCircle() {
+	face.attr('transform','translate(' + width/2 + ',' + (circleRadius + margin) + ')');
+	
 	var bar = face.selectAll('g')
 		.data(data)
 		.enter().append('g')
-		.attr('class', 'bar')
-		.attr('transform', function(d, i) {
-			// return 'rotate(' + d.theta + ')';
-		})
+		.attr('class', 'bar');
 
 	bar.append('text')
 		.text(function(d) {
@@ -296,6 +298,10 @@ function drawCircle() {
 		})
 		.attr('y', function(d) {
 			return d.circleCoords.y
+		})
+		// center of rotation
+		.attr('transform', function(d) {
+			return 'rotate('+ d.theta + ',' + d.circleCoords.x + ',' + d.circleCoords.y + ')';
 		});
 
 	face.on('click', function() {
@@ -306,8 +312,6 @@ function drawCircle() {
 };
 
 function drawRelationshipArcs(shape) {
-	console.log('drawRelationshipArcs()');
-
 	face.selectAll('g')
 		.each(function(d, i) {
 			// set the origin location
@@ -346,7 +350,7 @@ function drawRelationshipArcs(shape) {
 					.attr('d', 'M' + origin.x + ',' + origin.y + ' Q' + origin.x + ',' + origin.y + ' ' + origin.x +',' + origin.y)
 					.attr('class', 'relationship-arc')
 					.transition()
-						.duration(1000)
+						.duration(time)
 						.ease('linear')
 						.attr('d', 'M' + origin.x + ',' + origin.y + ' Q' + midPoint.x + ',' + midPoint.y + ' ' + target.x +',' + target.y)
            	}
