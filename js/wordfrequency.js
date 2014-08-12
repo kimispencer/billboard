@@ -31,10 +31,12 @@ function getWordFrequency(data){
 
 	var arr = []; // an array of objects to return
 	for (sWord in counts) {
-		arr.push({
-			text: sWord,
-			frequency: counts[sWord]
-		});
+		// if(counts[sWord]>1) {
+			arr.push({
+				word: sWord,
+				frequency: counts[sWord]
+			});
+		// }
 	}
 
 	// sort array by descending frequency | http://stackoverflow.com/a/8837505

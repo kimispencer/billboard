@@ -42,9 +42,8 @@ d3.json("data/test.json", function(error, raw) {
 
 // all visualization functions
 function visualizeData() {
-	// setup();
-	drawCircle();
-	// drawLine();
+	// drawCircle();
+	drawLine();
 	displayText();
 };
 
@@ -68,12 +67,11 @@ function processData(raw) {
 	});
 	// 2. determine frequency of words within that sample set
 	data = getWordFrequency(allLyrics.join(" "));	
-
-	// 4. match them with the d.text value, and set that as that word object's target
+	// 4. match them with the d.word value, and set that as that word object's target
 	data.forEach(function(d) {
 		allRelationships.forEach(function(r) {
 			r.forEach(function(rWord) {
-				if(rWord===d.text) {
+				if(rWord===d.word) {
 					d.relationships = r;
 				}
 			});
@@ -202,6 +200,10 @@ function transitionToCircle() {
 		});
 
 	setTimeout(function() {
+		face.selectAll('text')
+			.attr('transform', function(d) {
+				return 'rotate('+ d.theta +',' + d.circleCoords.x + ',' + d.circleCoords.y+ ')';
+			})
 		drawRelationshipArcs('circle');
 	}, time);
 
@@ -211,29 +213,6 @@ function transitionToCircle() {
 /*
 	* DRAW STUFF
 */
-
-// !!! should combine setup stuff here (repeating code)
-// function setup() {
-// 	var bar = face.selectAll('g')
-// 		.data(data)
-// 		.enter().append('g')
-// 		.attr('class', 'bar');
-
-// 	bar.append('text')
-// 		.text(function(d) {
-// 			return d.text;
-// 		})
-// 		.attr('font-size', function(d) {
-// 			return d.frequency * 5;
-// 		})
-// 		.attr('class', 'word')
-// 		.attr('x', function(d) {
-// 			return d.lineCoords.x;
-// 		})
-// 		.attr('y', function(d) {
-// 			return d.lineCoords.y
-// 		});
-// };
 
 // draw line + relationship arcs on INIT
 function drawLine() {	
@@ -252,7 +231,7 @@ function drawLine() {
 
 	bar.append('text')
 		.text(function(d) {
-			return d.text;
+			return d.word;
 		})
 		.attr('font-size', function(d) {
 			return d.frequency * 5;
@@ -287,7 +266,7 @@ function drawCircle() {
 
 	bar.append('text')
 		.text(function(d) {
-			return d.text;
+			return d.word;
 		})
 		.attr('font-size', function(d) {
 			return d.frequency * 5;
@@ -312,6 +291,7 @@ function drawCircle() {
 };
 
 function drawRelationshipArcs(shape) {
+   	var unique = [];
 	face.selectAll('g')
 		.each(function(d, i) {
 			// set the origin location
@@ -323,7 +303,7 @@ function drawRelationshipArcs(shape) {
 			d3.keys(d).forEach(function(key) {
 	           	if(key==="relationships") {
 	           		d[key].forEach(function(v) {
-	           			if(d.text!=v) {
+	           			if(d.word!=v) {
 	           				targetWord = v;
 	           			}
 	           		})
@@ -333,7 +313,7 @@ function drawRelationshipArcs(shape) {
            	// set the target location
            	var target;
            	d3.values(data).forEach(function(value) {
-           		if(value.text===targetWord) {
+           		if(value.word===targetWord) {
            			if(shape==='circle') target = value.circleCoords;
            			if(shape==='line') target = value.lineCoords;
            		}
@@ -341,26 +321,36 @@ function drawRelationshipArcs(shape) {
 
            	var midPoint;
            	if(target) {
-           		// center of circle
-           		if(shape==='circle') midPoint = {x: 0, y: 0};
-           		// midpoint between origin & target
-           		if(shape==='line') midPoint = {x: (origin.x+target.x)/2, y: -500}; 
-				// draw bezier curve
-				face.append('path')
-					.attr('d', 'M' + origin.x + ',' + origin.y + ' Q' + origin.x + ',' + origin.y + ' ' + origin.x +',' + origin.y)
-					.attr('class', 'relationship-arc')
-					.transition()
-						.duration(time)
-						.ease('linear')
-						.attr('d', 'M' + origin.x + ',' + origin.y + ' Q' + midPoint.x + ',' + midPoint.y + ' ' + target.x +',' + target.y)
+	           	unique.push(d.word);
+	           	if(unique.contains(targetWord)) {
+	           		// center of circle
+	           		if(shape==='circle') midPoint = {x: 0, y: 0};
+	           		// midpoint between origin & target
+	           		if(shape==='line') midPoint = {x: (origin.x+target.x)/2, y: -500}; 
+					// draw bezier curve
+					face.append('path')
+						.attr('d', 'M' + origin.x + ',' + origin.y + ' Q' + origin.x + ',' + origin.y + ' ' + origin.x +',' + origin.y)
+						.attr('class', 'relationship-arc')
+						.transition()
+							.duration(time)
+							.ease('linear')
+							.attr('d', 'M' + origin.x + ',' + origin.y + ' Q' + midPoint.x + ',' + midPoint.y + ' ' + target.x +',' + target.y)
+	           	}
            	}
 	});
+};
+
+Array.prototype.contains = function(v) {
+    for(var i = 0; i < this.length; i++) {
+        if(this[i] === v) return true;
+    }
+    return false;
 };
 
 function displayText() {
 	face.selectAll('g')
 		.on('mouseover', function(d, i) {
 			d3.select('.text-display')
-				.text(d.text)
+				.text(d.word)
 		});
 };
