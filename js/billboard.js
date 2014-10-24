@@ -57,17 +57,18 @@ function processData(raw) {
 		allRelationships = [];
 
 	raw.forEach(function(d) {
-		// 1. collect lyrics from defined sample and join them
+		// collect lyrics from defined sample and join them
 		allLyrics.push(d.lyrics);
 
-		// 3. pull out relationship pairs from sample set
+		// pull out relationship pairs from sample set
 		d.relationships.forEach(function(r) {
 			allRelationships.push(r);
 		})
 	});
-	// 2. determine frequency of words within that sample set
+	// determine frequency of words within that sample set
 	data = getWordFrequency(allLyrics.join(" "));	
-	// 4. match them with the d.word value, and set that as that word object's target
+
+	// match them with the d.word value, and set that as that word object's target
 	data.forEach(function(d) {
 		allRelationships.forEach(function(r) {
 			r.forEach(function(rWord) {
@@ -148,12 +149,7 @@ function transitionToLine() {
 	face.transition()
 		.duration(time)
 		.ease('linear')
-		.attr('transform','translate(' + 0 + ',' + (circleRadius + margin) + ')');
-
-	var bar = face.selectAll('g')
-		.data(data)
-		.enter().append('g')
-		.attr('class', 'bar');
+		.attr('transform','translate(' + margin * 2 + ',' + (circleRadius + margin) + ')');
 
 	face.selectAll('text')
 		.transition()
@@ -167,7 +163,11 @@ function transitionToLine() {
 		});
 
 	setTimeout(function() {
+		// console.log('done')
 		face.selectAll('text')
+			// .transition()
+			// .duration(time)
+			// .ease('linear')
 			.attr('transform', function(d) {
 				return 'rotate(-90,' + d.lineCoords.x + ',' + d.lineCoords.y+ ')';
 			})
@@ -216,18 +216,12 @@ function transitionToCircle() {
 
 // draw line + relationship arcs on INIT
 function drawLine() {	
-	face.attr('transform','translate(' + 0 + ',' + (circleRadius + margin) + ')');
+	face.attr('transform','translate(' + margin * 2 + ',' + (circleRadius + margin) + ')');
 
 	var bar = face.selectAll('g')
 		.data(data)
 		.enter().append('g')
 		.attr('class', 'bar');
-
-	bar.append('circle')
-		.attr('class', 'circle')
-		.attr('r', 20)
-		.attr('cx', 0)
-		.attr('cy', 0)
 
 	bar.append('text')
 		.text(function(d) {
